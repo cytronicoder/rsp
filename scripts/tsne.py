@@ -37,27 +37,53 @@ def plot_k_distance_graph(k):
     plt.show()
 
 
-def plot(dge_file, output_file, epsilon=4, minpts=40, dev=False, marker_gene=None):
+def plot(
+    dge_file,
+    output_file=None,
+    epsilon=4,
+    minpts=40,
+    dev=False,
+    marker_gene=None,
+    target_cluster=None,
+):
     """
     Generate t-SNE 2D coordinates from DGE file and cluster using DBSCAN.
 
     Parameters:
     - dge_file (str): The path to the DGE file.
-    - output_file (str): The path to the output file.
+    - output_file (str): The path to the output file; defaults to
+      the same directory as the DGE file with a .tsne.csv extension.
     - epsilon (int): The epsilon value for DBSCAN.
     - minpts (int): The minpts value for DBSCAN.
     - dev (bool): Whether to print debug information.
     - marker_gene (str): The name of the marker gene to highlight.
+    - target_cluster (int): The target cluster to highlight.
     """
     global dge_data, expression_matrix, tsne_coordinates, cluster_labels
+    print(f"Running in dev mode: {dev}")
+
+    split_filename = os.path.splitext(dge_file)[0]
+
+    if output_file is None:
+        output_file = split_filename + ".tsne.csv"
+        print(f"Defaulting output file directory to {output_file}.")
+
+    # Read the DGE file
+    if os.path.isfile(f"{split_filename}.dge.parquet"):
+        # Reading cache
+        dge_data = pd.read_parquet(f"{split_filename}.dge.parquet")
+    else:
+        dge_data = pd.read_csv(dge_file, sep=None, engine="python")
+
+        # Caching
+        dge_data.to_parquet(f"{split_filename}.dge.parquet")
 
     if os.path.isfile(output_file):
         # Read the coordinates from the output file if it exists
         tsne_coordinates = pd.read_csv(output_file).values
     else:
-        # Read the DGE file and generate t-SNE coordinates
-        dge_data = pd.read_csv(dge_file, sep=None, engine="python")
-        expression_matrix = dge_data.iloc[:, 1:].values.T.astype(float)
+        # Generate t-SNE coordinates
+        expression_matrix = dge_data.values.T.astype(float)
 
         if dev:
             print(
@@ -78,6 +104,8 @@ def plot(dge_file, output_file, epsilon=4, minpts=40, dev=False, marker_gene=Non
     cluster_labels = dbscan.fit_predict(tsne_coordinates)
     cluster_labels[cluster_labels != -1] = cluster_labels[cluster_labels != -1] + 1
 
+    ax = plt.subplot(111)
+
     if dev:
         # Print number of noise points and number of points in each cluster
         print(
@@ -93,13 +121,56 @@ def plot(dge_file, output_file, epsilon=4, minpts=40, dev=False, marker_gene=Non
             )
 
     if marker_gene:
-        # TODO: Highlight a specific gene in red (foreground) and all other genes in grey (background)
-        pass
+        if marker_gene in dge_data.index:
+            gene_expression = dge_data.loc[marker_gene].values
+            foreground_mask = gene_expression > 0
+            if target_cluster is not None:
+                cluster_mask = cluster_labels == target_cluster
+                foreground_mask = foreground_mask & cluster_mask
+                background_mask = cluster_mask & ~foreground_mask
+
+                print(
+                    f"Coverage for marker gene {marker_gene} in cluster {target_cluster}: {((foreground_mask.sum())/(cluster_mask.sum()) * 100):.2f}%"
+                )
+            else:
+                background_mask = ~foreground_mask
+
+                print(
+                    f"Coverage for marker gene {marker_gene}: {((foreground_mask.sum())/(background_mask.sum()) * 100):.2f}%"
+                )
+
+            ax.scatter(
+                tsne_coordinates[foreground_mask, 0],
+                tsne_coordinates[foreground_mask, 1],
+                color="red",
+                label=f"Foreground ({marker_gene})",
+                s=1,
+            )
+            ax.scatter(
+                tsne_coordinates[background_mask, 0],
+                tsne_coordinates[background_mask, 1],
+                color="lightgray",
+                label="Background",
+                s=1,
+                alpha=0.5,
+            )
+        else:
+            print(f"Marker gene '{marker_gene}' not found in the DGE data.")
+            return
+    elif target_cluster is not None:
+        mask = cluster_labels == target_cluster
+        ax.scatter(
+            tsne_coordinates[mask, 0],
+            tsne_coordinates[mask, 1],
+            s=1,
+            label=f"Cluster {target_cluster}",
+        )
     else:
+        # Plot all clusters if no marker gene is specified
         unique_labels = np.unique(cluster_labels)
         for label in unique_labels:
             mask = cluster_labels == label
-            plt.scatter(
+            ax.scatter(
                 tsne_coordinates[mask, 0],
                 tsne_coordinates[mask, 1],
                 s=1,
@@ -108,7 +179,7 @@ def plot(dge_file, output_file, epsilon=4, minpts=40, dev=False, marker_gene=Non
             )
             if label != -1:
                 cluster_center = tsne_coordinates[mask].mean(axis=0)
-                plt.annotate(
+                ax.annotate(
                     str(label),
                     cluster_center,
                     fontsize=10,
@@ -120,6 +191,11 @@ def plot(dge_file, output_file, epsilon=4, minpts=40, dev=False, marker_gene=Non
 
     plt.xlabel("t-SNE 1")
     plt.ylabel("t-SNE 2")
-    plt.title("t-SNE plot with DBSCAN clustering")
+
+    if marker_gene:
+        plt.title(f"t-SNE plot with {marker_gene} highlighted")
+    else:
+        plt.title("t-SNE plot with DBSCAN clustering")
+
     plt.legend(loc="best", markerscale=5)
     plt.show()
