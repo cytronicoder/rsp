@@ -40,11 +40,11 @@ def plot_k_distance_graph(k):
 def plot(
     dge_file,
     output_file=None,
+    marker_gene=None,
+    target_cluster=None,
     epsilon=4,
     minpts=40,
     dev=False,
-    marker_gene=None,
-    target_cluster=None,
 ):
     """
     Generate t-SNE 2D coordinates from DGE file and cluster using DBSCAN.
@@ -53,11 +53,11 @@ def plot(
     - dge_file (str): The path to the DGE file.
     - output_file (str): The path to the output file; defaults to
       the same directory as the DGE file with a .tsne.csv extension.
+    - marker_gene (str): The name of the marker gene to highlight.
+    - target_cluster (int): The target cluster to highlight.
     - epsilon (int): The epsilon value for DBSCAN.
     - minpts (int): The minpts value for DBSCAN.
     - dev (bool): Whether to print debug information.
-    - marker_gene (str): The name of the marker gene to highlight.
-    - target_cluster (int): The target cluster to highlight.
     """
     global dge_data, expression_matrix, tsne_coordinates, cluster_labels
     print(f"Running in dev mode: {dev}")
