@@ -37,7 +37,7 @@ def plot_k_distance_graph(k):
     plt.show()
 
 
-def plot(
+def generate_tsne(
     dge_file,
     output_file=None,
     marker_gene=None,
@@ -120,12 +120,23 @@ def plot(
                 )
             )
 
+    # Filter for returning later
+    filtered_tsne_coordinates = tsne_coordinates
+
     if marker_gene:
         if marker_gene in dge_data.index:
             gene_expression = dge_data.loc[marker_gene].values
-            foreground_mask = gene_expression > 0
+            is_expressing = gene_expression > 0
+            foreground_mask = is_expressing
+
             if target_cluster is not None:
                 cluster_mask = cluster_labels == target_cluster
+                is_expressing = is_expressing & cluster_mask
+
+                # Filter tsne_coordinates and is_expressing arrays based on target cluster
+                filtered_tsne_coordinates = tsne_coordinates[cluster_mask]
+                is_expressing = is_expressing[cluster_mask]
+
                 foreground_mask = foreground_mask & cluster_mask
                 background_mask = cluster_mask & ~foreground_mask
 
@@ -156,8 +167,11 @@ def plot(
             )
         else:
             print(f"Marker gene '{marker_gene}' not found in the DGE data.")
-            return
+            return None, None  # Marker gene not found
     elif target_cluster is not None:
+        is_expressing = cluster_labels == target_cluster
+        filtered_tsne_coordinates = tsne_coordinates[is_expressing]
+
         mask = cluster_labels == target_cluster
         ax.scatter(
             tsne_coordinates[mask, 0],
@@ -167,6 +181,7 @@ def plot(
         )
     else:
         # Plot all clusters if no marker gene is specified
+        is_expressing = None  # No marker gene, so no foreground/background
         unique_labels = np.unique(cluster_labels)
         for label in unique_labels:
             mask = cluster_labels == label
@@ -197,5 +212,58 @@ def plot(
     else:
         plt.title("t-SNE plot with DBSCAN clustering")
 
+    plt.legend(loc="best", markerscale=5)
+    plt.show()
+
+    return filtered_tsne_coordinates, is_expressing
+
+
+def plot(tsne_coordinates, is_expressing, title="t-SNE Plot"):
+    """
+    Plot t-SNE coordinates highlighting points based on the is_expressing array.
+
+    Parameters:
+    - tsne_coordinates (array): 2D array of t-SNE coordinates.
+    - is_expressing (array): Boolean array indicating which points to highlight.
+    - title (str): The title for the plot.
+    """
+
+    if tsne_coordinates is None or is_expressing is None:
+        print("No t-SNE coordinates or is_expressing array provided.")
+        return
+
+    # Points that are expressing
+    foreground_mask = np.array(is_expressing)
+
+    # Points that are not expressing
+    background_mask = ~foreground_mask
+
+    # Create a new figure and axis
+    plt.figure(figsize=(8, 8))
+    ax = plt.subplot(111)
+
+    # Plot the background points (not expressing)
+    ax.scatter(
+        tsne_coordinates[background_mask, 0],
+        tsne_coordinates[background_mask, 1],
+        color="lightgray",
+        label="Background",
+        s=1,
+        alpha=0.5,
+    )
+
+    # Plot the foreground points (expressing)
+    ax.scatter(
+        tsne_coordinates[foreground_mask, 0],
+        tsne_coordinates[foreground_mask, 1],
+        color="red",
+        label="Foreground",
+        s=1,
+    )
+
+    # Set labels, title, and legend
+    plt.xlabel("t-SNE 1")
+    plt.ylabel("t-SNE 2")
+    plt.title(title)
     plt.legend(loc="best", markerscale=5)
     plt.show()
