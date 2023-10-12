@@ -1,5 +1,5 @@
 import numpy as np
-import matplotlib.pyplot as plt
+import plotly.graph_objects as go
 
 
 def plot_simulated_cells(
@@ -54,29 +54,39 @@ def plot_simulated_cells(
 
     is_expressing[expressing_indices] = True
 
-    # Plotting
-    plt.figure(figsize=(6, 6))
-    plt.scatter(
-        coordinates[~is_expressing, 0],
-        coordinates[~is_expressing, 1],
-        color="gray",
-        s=1,
-        alpha=0.25,
-        label="Background",
+    # Plotting with Plotly
+    fig = go.Figure()
+
+    # Plot for background cells
+    fig.add_trace(
+        go.Scatter(
+            x=coordinates[~is_expressing, 0],
+            y=coordinates[~is_expressing, 1],
+            mode="markers",
+            marker=dict(color="gray", size=5, opacity=0.25),
+            name="Background",
+        )
     )
-    plt.scatter(
-        coordinates[is_expressing, 0],
-        coordinates[is_expressing, 1],
-        color="red",
-        s=1,
-        label="Expressing Cells",
+
+    # Plot for expressing cells
+    fig.add_trace(
+        go.Scatter(
+            x=coordinates[is_expressing, 0],
+            y=coordinates[is_expressing, 1],
+            mode="markers",
+            marker=dict(color="red", size=5),
+            name="Expressing Cells",
+        )
     )
-    plt.xlabel("X")
-    plt.ylabel("Y")
-    plt.title(
-        f"{distribution.capitalize()} Distribution with {expression_percentage*100}% Expressing Cells"
+
+    fig.update_layout(
+        title=f"{distribution.capitalize()} Distribution with {expression_percentage*100}% Expressing Cells",
+        xaxis_title="X",
+        yaxis_title="Y",
+        width=600,
+        height=600,
     )
-    plt.legend()
-    plt.show()
+
+    fig.show()
 
     return coordinates, is_expressing
