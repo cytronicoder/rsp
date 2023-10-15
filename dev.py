@@ -1,6 +1,7 @@
 from scripts.tsne import generate_tsne
 from scripts.simulation import plot_simulated_cells
 from scripts.rsp import generate_polygon
+from scripts.util import save_plot
 
 # coordinates, is_expressing = generate_tsne(
 #     dge_file="data/GSM2906447_NeonatalHeart_dge.txt",
@@ -13,11 +14,11 @@ coordinates, is_expressing, _ = plot_simulated_cells(
     expression_percentage=0.50,
     distribution="biased",
     sigma=0.3,
-    display=True,
+    display=False,
 )
 
 fig = generate_polygon(coordinates, is_expressing)
-fig.show()
+save_plot(fig, "rsp.png")
 
 # from 0 to 1 in intervals of 0.1
 # for i in range(1, 10, 1):
