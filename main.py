@@ -9,25 +9,22 @@ from threading import Timer
 from scripts.tsne import generate_tsne
 from scripts.simulation import plot_simulated_cells
 
-# coordinates, is_expressing = generate_tsne(
-#     dge_file="data/GSM2906447_NeonatalHeart_dge.txt",
-#     marker_gene="Actc1",
-#     target_cluster=1,
-#     dev=True,
-# )
+marker_gene = input("Please enter the name of the marker gene: ")
 
-coordinates, is_expressing = plot_simulated_cells(
-    num_points=1000, expression_percentage=0.80, distribution="biased", sigma=0.3
+coordinates, is_expressing = generate_tsne(
+    dge_file="data/GSM2906447_NeonatalHeart_dge.txt",
+    marker_gene=marker_gene,
 )
 
-# Get initial theta from the user
+# coordinates, is_expressing = plot_simulated_cells(
+#     num_points=1000, expression_percentage=0.80, distribution="biased", sigma=0.3
+# )
+
 initial_theta = np.radians(float(input("Please enter an initial angle (in degrees): ")))
 
-# Initialize the app
 app = dash.Dash(__name__)
 
 
-# Function to compute z-scores
 def compute_z_scores(coordinates, theta):
     x, y = coordinates[:, 0], coordinates[:, 1]
     z_scores = x * np.cos(theta) + y * np.sin(theta)
@@ -38,10 +35,11 @@ def compute_z_scores(coordinates, theta):
 app.layout = html.Div(
     [
         dcc.Graph(id="histogram-graph"),
+        dcc.Graph(id="difference-graph"),
         dcc.Slider(
             id="theta-slider",
-            min=initial_theta - np.pi / 2,  # theta - 90 degrees
-            max=initial_theta + np.pi / 2,  # theta + 90 degrees
+            min=initial_theta - np.pi / 2,
+            max=initial_theta + np.pi / 2,
             step=0.01,
             value=initial_theta,
             marks={
@@ -58,9 +56,12 @@ app.layout = html.Div(
 )
 
 
-# App callback
 @app.callback(
-    [Output("histogram-graph", "figure"), Output("theta-display", "children")],
+    [
+        Output("histogram-graph", "figure"),
+        Output("difference-graph", "figure"),
+        Output("theta-display", "children"),
+    ],
     [Input("theta-slider", "value")],
 )
 def update_histogram(theta):
@@ -79,10 +80,23 @@ def update_histogram(theta):
         barmode="overlay", title=f"Histogram at θ = {np.degrees(theta):.2f}°"
     )
 
-    return fig, f"θ = {np.degrees(theta):.2f}°"
+    fg_hist_values, fg_hist_bins = np.histogram(fg_z_scores)
+    bg_hist_values, bg_hist_bins = np.histogram(bg_z_scores)
+    diff_values = fg_hist_values - bg_hist_values
+
+    diff_fig = go.Figure()
+    diff_fig.add_trace(
+        go.Bar(
+            x=fg_hist_bins[:-1], y=diff_values, name="Difference", marker_color="green"
+        )
+    )
+    diff_fig.update_layout(
+        title=f"Difference Histogram at θ = {np.degrees(theta):.2f}°"
+    )
+
+    return fig, diff_fig, f"θ = {np.degrees(theta):.2f}°"
 
 
 if __name__ == "__main__":
-    # Start the server in a different thread to allow for browser open command to execute immediately after
     Timer(1, lambda: webbrowser.open("http://127.0.0.1:8050/")).start()
     app.run_server(debug=True, use_reloader=False)
