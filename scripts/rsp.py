@@ -50,7 +50,7 @@ def generate_polygon(coordinates, is_expressing, theta_bound=[0, 2 * np.pi]):
 
         # Compute the difference between CDFs
         difference = foreground_cdf - background_cdf
-        differences.append(np.sum(difference))
+        differences.append(np.sum(np.abs(difference)))
 
     # Construct the polygon
     angles = []

@@ -8,7 +8,7 @@ from scripts.rsp import generate_polygon
 #     target_cluster=1,
 # )
 
-coordinates, is_expressing = plot_simulated_cells(
+coordinates, is_expressing, _ = plot_simulated_cells(
     num_points=1000,
     expression_percentage=0.50,
     distribution="biased",
@@ -22,7 +22,7 @@ fig.show()
 # from 0 to 1 in intervals of 0.1
 # for i in range(1, 10, 1):
 #     expression_percentage = i / 10
-#     coordinates, is_expressing = plot_simulated_cells(
+#     coordinates, is_expressing, _ = plot_simulated_cells(
 #         num_points=1000,
 #         expression_percentage=expression_percentage,
 #         distribution="biased",
@@ -39,7 +39,7 @@ fig.show()
 # # range from 10% to 100% in intervals of 10%
 # for i in range(11, 100, 11):
 #     expression_percentage = i / 100
-#     coordinates, is_expressing = plot_simulated_cells(
+#     coordinates, is_expressing, _ = plot_simulated_cells(
 #         num_points=1000,
 #         expression_percentage=expression_percentage,
 #         distribution="biased",

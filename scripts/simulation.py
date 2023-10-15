@@ -66,40 +66,40 @@ def plot_simulated_cells(
 
     is_expressing[expressing_indices] = True
 
+    # Plotting with Plotly
+    fig = go.Figure()
+
+    # Plot for background cells
+    fig.add_trace(
+        go.Scatter(
+            x=coordinates[~is_expressing, 0],
+            y=coordinates[~is_expressing, 1],
+            mode="markers",
+            marker=dict(color="gray", size=5, opacity=0.25),
+            name="Background",
+        )
+    )
+
+    # Plot for expressing cells
+    fig.add_trace(
+        go.Scatter(
+            x=coordinates[is_expressing, 0],
+            y=coordinates[is_expressing, 1],
+            mode="markers",
+            marker=dict(color="red", size=5),
+            name="Expressing Cells",
+        )
+    )
+
+    fig.update_layout(
+        title=f"{distribution.capitalize()} Distribution with {expression_percentage*100}% Expressing Cells",
+        xaxis_title="X",
+        yaxis_title="Y",
+        width=600,
+        height=600,
+    )
+
     if display:
-        # Plotting with Plotly
-        fig = go.Figure()
-
-        # Plot for background cells
-        fig.add_trace(
-            go.Scatter(
-                x=coordinates[~is_expressing, 0],
-                y=coordinates[~is_expressing, 1],
-                mode="markers",
-                marker=dict(color="gray", size=5, opacity=0.25),
-                name="Background",
-            )
-        )
-
-        # Plot for expressing cells
-        fig.add_trace(
-            go.Scatter(
-                x=coordinates[is_expressing, 0],
-                y=coordinates[is_expressing, 1],
-                mode="markers",
-                marker=dict(color="red", size=5),
-                name="Expressing Cells",
-            )
-        )
-
-        fig.update_layout(
-            title=f"{distribution.capitalize()} Distribution with {expression_percentage*100}% Expressing Cells",
-            xaxis_title="X",
-            yaxis_title="Y",
-            width=600,
-            height=600,
-        )
-
         fig.show()
 
-    return coordinates, is_expressing
+    return coordinates, is_expressing, fig
