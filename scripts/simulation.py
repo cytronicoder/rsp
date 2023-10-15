@@ -3,7 +3,12 @@ import plotly.graph_objects as go
 
 
 def plot_simulated_cells(
-    num_points=1000, expression_percentage=0.5, distribution="even", sigma=0.3
+    num_points,
+    expression_percentage,
+    distribution="even",
+    sigma=0.3,
+    seed=None,
+    display=False,
 ):
     """
     Generate points with coordinates between -1 and 1 using uniform sampling.
@@ -14,13 +19,20 @@ def plot_simulated_cells(
     Parameters:
     - num_points (int): Number of points to generate.
     - expression_percentage (float): Percentage of points representing the cells expressing the gene.
-    - distribution (str): Can be 'even' for random distribution or 'biased' for clustered foreground.
-    - sigma (float): Standard deviation of the Gaussian distribution; defaults to 0.3.
+    - distribution (str, optional): Can be 'even' for random distribution or 'biased' for clustered foreground.
+                                    Defaults to 'even'.
+    - sigma (float, optional): Standard deviation of the Gaussian distribution; defaults to 0.3.
+    - seed (int, optional): Random seed for reproducibility.
+    - display (bool, optional): Whether to display the plot.
 
     Returns:
     - coordinates (numpy array): Array containing the generated points.
     - is_expressing (numpy array): Boolean array indicating whether each point represents a cell expressing the gene.
     """
+
+    # Setting the seed for reproducibility
+    if seed is not None:
+        np.random.seed(seed)
 
     coordinates = np.zeros((num_points, 2))
     is_expressing = np.zeros(num_points, dtype=bool)
@@ -54,39 +66,40 @@ def plot_simulated_cells(
 
     is_expressing[expressing_indices] = True
 
-    # Plotting with Plotly
-    fig = go.Figure()
+    if display:
+        # Plotting with Plotly
+        fig = go.Figure()
 
-    # Plot for background cells
-    fig.add_trace(
-        go.Scatter(
-            x=coordinates[~is_expressing, 0],
-            y=coordinates[~is_expressing, 1],
-            mode="markers",
-            marker=dict(color="gray", size=5, opacity=0.25),
-            name="Background",
+        # Plot for background cells
+        fig.add_trace(
+            go.Scatter(
+                x=coordinates[~is_expressing, 0],
+                y=coordinates[~is_expressing, 1],
+                mode="markers",
+                marker=dict(color="gray", size=5, opacity=0.25),
+                name="Background",
+            )
         )
-    )
 
-    # Plot for expressing cells
-    fig.add_trace(
-        go.Scatter(
-            x=coordinates[is_expressing, 0],
-            y=coordinates[is_expressing, 1],
-            mode="markers",
-            marker=dict(color="red", size=5),
-            name="Expressing Cells",
+        # Plot for expressing cells
+        fig.add_trace(
+            go.Scatter(
+                x=coordinates[is_expressing, 0],
+                y=coordinates[is_expressing, 1],
+                mode="markers",
+                marker=dict(color="red", size=5),
+                name="Expressing Cells",
+            )
         )
-    )
 
-    fig.update_layout(
-        title=f"{distribution.capitalize()} Distribution with {expression_percentage*100}% Expressing Cells",
-        xaxis_title="X",
-        yaxis_title="Y",
-        width=600,
-        height=600,
-    )
+        fig.update_layout(
+            title=f"{distribution.capitalize()} Distribution with {expression_percentage*100}% Expressing Cells",
+            xaxis_title="X",
+            yaxis_title="Y",
+            width=600,
+            height=600,
+        )
 
-    fig.show()
+        fig.show()
 
     return coordinates, is_expressing
