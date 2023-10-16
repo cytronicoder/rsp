@@ -1,7 +1,3 @@
-"""
-TSNE generation script and related functions.
-"""
-
 import os
 import numpy as np
 import pandas as pd
@@ -11,22 +7,18 @@ from sklearn.metrics import pairwise_distances
 import plotly.graph_objects as go
 import plotly.express as px
 
-dge_data = None
-expression_matrix = None
-tsne_coordinates = None
-cluster_labels = None
 
-
-def plot_k_distance_graph(k):
+def plot_k_distance_graph(tsne_coordinates, k):
     """
     Generate k-distance graph for t-SNE coordinates; useful in determining
     the value of epsilon for DBSCAN.
 
     Parameters:
     - k (int): The value of k for computing the k-distance graph.
-    """
-    global tsne_coordinates
 
+    Example:
+    >>> plot_k_distance_graph(3)
+    """
     dists = pairwise_distances(tsne_coordinates)
     k_dists = np.sort(dists, axis=1)[:, k]
     sorted_k_dists = np.sort(k_dists)
@@ -62,7 +54,11 @@ def generate_tsne(
     - minpts (int): The minpts value for DBSCAN.
     - dev (bool): Whether to print debug information.
     """
-    global dge_data, expression_matrix, tsne_coordinates, cluster_labels
+    dge_data = None
+    expression_matrix = None
+    tsne_coordinates = None
+    cluster_labels = None
+
     print(f"Running in dev mode: {dev}")
 
     split_filename = os.path.splitext(dge_file)[0]
@@ -100,7 +96,7 @@ def generate_tsne(
         )
 
     if dev:
-        plot_k_distance_graph(minpts)
+        plot_k_distance_graph(tsne_coordinates, minpts)
         print(input("Press Enter to continue..."))
 
     # Calculate cluster IDs using DBSCAN
@@ -211,6 +207,9 @@ def plot(tsne_coordinates, is_expressing, title="t-SNE Plot"):
     - tsne_coordinates (array): 2D array of t-SNE coordinates.
     - is_expressing (array): Boolean array indicating which points to highlight.
     - title (str): The title for the plot.
+
+    Example:
+    >>> plot(tsne_coordinates, is_expressing, title="t-SNE Plot")
     """
 
     if tsne_coordinates is None or is_expressing is None:

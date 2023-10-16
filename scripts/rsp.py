@@ -1,9 +1,35 @@
+"""
+This module offers utilities for performing gene analysis using both t-SNE and RSP (Radar Scanning Plot) representations.
+
+The primary functionality allows users to:
+
+1. Generate a polygonal representation of data distributions given certain coordinates.
+2. Conduct a comprehensive gene analysis by generating t-SNE plots and RSP plots for a specified marker gene and target cluster.
+"""
+
 import numpy as np
 import plotly.graph_objects as go
 from scripts.tsne import generate_tsne
 
 
 def generate_polygon(coordinates, is_expressing, theta_bound=[0, 2 * np.pi]):
+    """
+    Generates a polygonal representation of data distributions using given coordinates.
+
+    Parameters:
+    - coordinates (np.ndarray): A 2D array of x and y coordinates.
+    - is_expressing (np.ndarray): Boolean array indicating the expressing status of each coordinate.
+    - theta_bound (list, optional): Boundaries for the angle theta. Default is [0, 2 * np.pi].
+
+    Returns:
+    - rsp_fig (plotly.graph_objects.Figure): A Plotly figure representing the generated polygon.
+
+    Example:
+    >>> coords = np.array([[1,2],[3,4],[5,6]])
+    >>> expressing = np.array([True, False, True])
+    >>> fig = generate_polygon(coords, expressing)
+    >>> fig.show()
+    """
     resolution = 1000
     theta_start, theta_end = theta_bound
     angle_step = (theta_end - theta_start) / resolution
@@ -114,6 +140,23 @@ def generate_polygon(coordinates, is_expressing, theta_bound=[0, 2 * np.pi]):
 def gene_analysis(
     dge_file, marker_gene=None, target_cluster=None, theta_bound=[0, 2 * np.pi]
 ):
+    """
+    Performs gene analysis by generating t-SNE and RSP plots for a given marker gene and target cluster.
+
+    Parameters:
+    - dge_file (str): Path to the DGE (Differential Gene Expression) file.
+    - marker_gene (str, optional): The marker gene of interest. Default is None.
+    - target_cluster (str, optional): The target cluster to focus on. Default is None.
+    - theta_bound (list, optional): Boundaries for the angle theta used in the RSP plot. Default is [0, 2 * np.pi].
+
+    Returns:
+    - tuple: A tuple containing t-SNE and RSP Plotly figures.
+
+    Example:
+    >>> tsne_fig, rsp_fig = gene_analysis('path/to/dge/file.txt', marker_gene='GeneA', target_cluster='Cluster1')
+    >>> tsne_fig.show()
+    >>> rsp_fig.show()
+    """
     tsne_coordinates, is_expressing, tsne_fig = generate_tsne(
         dge_file, marker_gene=marker_gene, target_cluster=target_cluster
     )
