@@ -59,13 +59,16 @@ def generate_tsne(
     tsne_coordinates = None
     cluster_labels = None
 
-    print(f"Running in dev mode: {dev}")
+    if dev:
+        print(f"Running in dev mode!")
 
     split_filename = os.path.splitext(dge_file)[0]
 
     if output_file is None:
         output_file = split_filename + ".tsne.csv"
-        print(f"Defaulting output file directory to {output_file}.")
+
+        if dev:
+            print(f"Defaulting output file directory to {output_file}.")
 
     # Read the DGE file
     if os.path.isfile(f"{split_filename}.dge.parquet"):
