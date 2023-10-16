@@ -1,7 +1,14 @@
 from scripts.tsne import generate_tsne
 from scripts.simulation import plot_simulated_cells
-from scripts.rsp import generate_polygon
+from scripts.rsp import generate_polygon, gene_analysis
 from scripts.util import save_plot
+
+fig = gene_analysis(
+    dge_file="data/GSM2906447_NeonatalHeart_dge.txt",
+    marker_gene="Actc1",
+    target_cluster=1,
+)
+fig.show()
 
 # coordinates, is_expressing = generate_tsne(
 #     dge_file="data/GSM2906447_NeonatalHeart_dge.txt",
@@ -9,16 +16,16 @@ from scripts.util import save_plot
 #     target_cluster=1,
 # )
 
-coordinates, is_expressing, _ = plot_simulated_cells(
-    num_points=1000,
-    expression_percentage=0.50,
-    distribution="biased",
-    sigma=0.3,
-    display=False,
-)
+# coordinates, is_expressing, _ = plot_simulated_cells(
+#     num_points=1000,
+#     expression_percentage=0.50,
+#     distribution="biased",
+#     sigma=0.3,
+#     display=False,
+# )
 
-fig = generate_polygon(coordinates, is_expressing)
-save_plot(fig, "rsp.png")
+# fig = generate_polygon(coordinates, is_expressing)
+# save_plot(fig, "rsp.png")
 
 # from 0 to 1 in intervals of 0.1
 # for i in range(1, 10, 1):

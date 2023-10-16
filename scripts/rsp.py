@@ -1,5 +1,6 @@
 import numpy as np
 import plotly.graph_objects as go
+from scripts.tsne import generate_tsne
 
 
 def generate_polygon(coordinates, is_expressing, theta_bound=[0, 2 * np.pi]):
@@ -15,7 +16,7 @@ def generate_polygon(coordinates, is_expressing, theta_bound=[0, 2 * np.pi]):
     differences = []
 
     for theta in np.linspace(theta_start, theta_end, resolution):
-        # Compute histograms
+        # Compute projections
         foreground_projection = (
             np.cos(theta) * foreground_coordinates[:, 0]
             + np.sin(theta) * foreground_coordinates[:, 1]
@@ -41,14 +42,11 @@ def generate_polygon(coordinates, is_expressing, theta_bound=[0, 2 * np.pi]):
 
         # Compute CDFs
         foreground_cdf = np.cumsum(foreground_hist_values)
-        # foreground_cdf = foreground_cdf / foreground_cdf[-1]
-        foreground_cdf = foreground_cdf / np.max(foreground_cdf)
+        foreground_cdf = foreground_cdf / foreground_cdf[-1]
 
         background_cdf = np.cumsum(background_hist_values)
-        # background_cdf = background_cdf / background_cdf[-1]
-        background_cdf = background_cdf / np.max(background_cdf)
+        background_cdf = background_cdf / background_cdf[-1]
 
-        # Compute the difference between CDFs
         difference = foreground_cdf - background_cdf
         differences.append(np.sum(np.abs(difference)))
 
@@ -79,7 +77,7 @@ def generate_polygon(coordinates, is_expressing, theta_bound=[0, 2 * np.pi]):
     fig.add_trace(
         go.Scatterpolar(
             r=radii,
-            theta=np.degrees(angles),  # plotly uses degrees for polar plots
+            theta=np.degrees(angles),
             fill="toself",
             name="Polygon",
             line=dict(color="blue"),
@@ -109,5 +107,17 @@ def generate_polygon(coordinates, is_expressing, theta_bound=[0, 2 * np.pi]):
         ],
         showlegend=True,
     )
+
+    return fig
+
+
+def gene_analysis(
+    dge_file, marker_gene=None, target_cluster=None, theta_bound=[0, 2 * np.pi]
+):
+    tsne_coordinates, is_expressing = generate_tsne(
+        dge_file, marker_gene=marker_gene, target_cluster=target_cluster
+    )
+
+    fig = generate_polygon(tsne_coordinates, is_expressing, theta_bound=theta_bound)
 
     return fig
