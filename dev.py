@@ -1,18 +1,21 @@
 from scripts.tsne import generate_tsne
 from scripts.simulation import plot_simulated_cells
 from scripts.rsp import generate_polygon, gene_analysis
-from scripts.util import save_plot
+from scripts.util import get_genes, save_plot
 
-tsne_fig, rsp_fig = gene_analysis(
-    dge_file="data/GSM2906447_NeonatalHeart_dge.txt",
-    marker_gene="Actc1",
-    target_cluster=1,
-)
+genes = get_genes(dge_file="data/GSM2906447_NeonatalHeart_dge.txt", target_cluster=1)
+print(genes)
 
-for fig in [tsne_fig, rsp_fig]:
-    fig.show()
+# tsne_fig, rsp_fig = gene_analysis(
+#     dge_file="data/GSM2906447_NeonatalHeart_dge.txt",
+#     marker_gene="Actc1",
+#     target_cluster=1,
+# )
 
-save_plot(tsne_fig, "tsne.png")
+# for fig in [tsne_fig, rsp_fig]:
+#     fig.show()
+
+# save_plot(tsne_fig, "tsne.png")
 
 # coordinates, is_expressing = generate_tsne(
 #     dge_file="data/GSM2906447_NeonatalHeart_dge.txt",
