@@ -3,12 +3,13 @@ TSNE generation script and related functions.
 """
 
 import os
-import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 from sklearn.cluster import DBSCAN
 from sklearn.manifold import TSNE
 from sklearn.metrics import pairwise_distances
+import plotly.graph_objects as go
+import plotly.express as px
 
 dge_data = None
 expression_matrix = None
@@ -30,11 +31,13 @@ def plot_k_distance_graph(k):
     k_dists = np.sort(dists, axis=1)[:, k]
     sorted_k_dists = np.sort(k_dists)
 
-    plt.plot(sorted_k_dists)
-    plt.title("k-distance graph")
-    plt.xlabel(f"Points sorted with {k}th nearest distances")
-    plt.ylabel(f"{k}th nearest distances")
-    plt.show()
+    fig = px.line(
+        x=np.arange(len(sorted_k_dists)),
+        y=sorted_k_dists,
+        labels={"x": "Points", "y": f"{k}th nearest distances"},
+    )
+    fig.update_layout(title="k-distance graph")
+    fig.show()
 
 
 def generate_tsne(
@@ -98,13 +101,14 @@ def generate_tsne(
 
     if dev:
         plot_k_distance_graph(minpts)
+        print(input("Press Enter to continue..."))
 
     # Calculate cluster IDs using DBSCAN
     dbscan = DBSCAN(eps=epsilon, min_samples=minpts)
     cluster_labels = dbscan.fit_predict(tsne_coordinates)
     cluster_labels[cluster_labels != -1] = cluster_labels[cluster_labels != -1] + 1
 
-    ax = plt.subplot(111)
+    fig = go.Figure()
 
     if dev:
         # Print number of noise points and number of points in each cluster
@@ -132,52 +136,47 @@ def generate_tsne(
             if target_cluster is not None:
                 cluster_mask = cluster_labels == target_cluster
                 is_expressing = is_expressing & cluster_mask
-
-                # Filter tsne_coordinates and is_expressing arrays based on target cluster
                 filtered_tsne_coordinates = tsne_coordinates[cluster_mask]
                 is_expressing = is_expressing[cluster_mask]
-
                 foreground_mask = foreground_mask & cluster_mask
                 background_mask = cluster_mask & ~foreground_mask
-
-                print(
-                    f"Coverage for marker gene {marker_gene} in cluster {target_cluster}: {((foreground_mask.sum())/(cluster_mask.sum()) * 100):.2f}%"
-                )
             else:
                 background_mask = ~foreground_mask
 
-                print(
-                    f"Coverage for marker gene {marker_gene}: {((foreground_mask.sum())/(background_mask.sum()) * 100):.2f}%"
+            fig.add_trace(
+                go.Scatter(
+                    x=tsne_coordinates[background_mask, 0],
+                    y=tsne_coordinates[background_mask, 1],
+                    mode="markers",
+                    marker=dict(color="lightgray", size=5, opacity=0.75),
+                    name="Background",
                 )
-
-            ax.scatter(
-                tsne_coordinates[foreground_mask, 0],
-                tsne_coordinates[foreground_mask, 1],
-                color="red",
-                label=f"Foreground ({marker_gene})",
-                s=1,
             )
-            ax.scatter(
-                tsne_coordinates[background_mask, 0],
-                tsne_coordinates[background_mask, 1],
-                color="lightgray",
-                label="Background",
-                s=1,
-                alpha=0.5,
+            fig.add_trace(
+                go.Scatter(
+                    x=tsne_coordinates[foreground_mask, 0],
+                    y=tsne_coordinates[foreground_mask, 1],
+                    mode="markers",
+                    marker=dict(color="red", size=5),
+                    name=f"Foreground ({marker_gene})",
+                )
             )
         else:
             print(f"Marker gene '{marker_gene}' not found in the DGE data.")
-            return None, None  # Marker gene not found
+            return None, None
     elif target_cluster is not None:
         is_expressing = cluster_labels == target_cluster
         filtered_tsne_coordinates = tsne_coordinates[is_expressing]
-
         mask = cluster_labels == target_cluster
-        ax.scatter(
-            tsne_coordinates[mask, 0],
-            tsne_coordinates[mask, 1],
-            s=1,
-            label=f"Cluster {target_cluster}",
+
+        fig.add_trace(
+            go.Scatter(
+                x=tsne_coordinates[mask, 0],
+                y=tsne_coordinates[mask, 1],
+                mode="markers",
+                marker=dict(size=5),
+                name=f"Cluster {target_cluster}",
+            )
         )
     else:
         # Plot all clusters if no marker gene is specified
@@ -185,37 +184,23 @@ def generate_tsne(
         unique_labels = np.unique(cluster_labels)
         for label in unique_labels:
             mask = cluster_labels == label
-            ax.scatter(
-                tsne_coordinates[mask, 0],
-                tsne_coordinates[mask, 1],
-                s=1,
-                alpha=0.1,
-                label=f"Cluster {label}" if label != -1 else "Noise",
-            )
-            if label != -1:
-                cluster_center = tsne_coordinates[mask].mean(axis=0)
-                ax.annotate(
-                    str(label),
-                    cluster_center,
-                    fontsize=10,
-                    ha="center",
-                    va="center",
-                    color="black",
-                    weight="bold",
+            fig.add_trace(
+                go.Scatter(
+                    x=tsne_coordinates[mask, 0],
+                    y=tsne_coordinates[mask, 1],
+                    mode="markers",
+                    marker=dict(size=5, opacity=0.1 if label == -1 else 1.0),
+                    name=f"Cluster {label}" if label != -1 else "Noise",
                 )
+            )
 
-    plt.xlabel("t-SNE 1")
-    plt.ylabel("t-SNE 2")
+    fig.update_layout(
+        title="t-SNE plot with DBSCAN clustering"
+        if not marker_gene
+        else f"t-SNE plot with {marker_gene} highlighted"
+    )
 
-    if marker_gene:
-        plt.title(f"t-SNE plot with {marker_gene} highlighted")
-    else:
-        plt.title("t-SNE plot with DBSCAN clustering")
-
-    plt.legend(loc="best", markerscale=5)
-    plt.show()
-
-    return filtered_tsne_coordinates, is_expressing
+    return filtered_tsne_coordinates, is_expressing, fig
 
 
 def plot(tsne_coordinates, is_expressing, title="t-SNE Plot"):
@@ -234,36 +219,29 @@ def plot(tsne_coordinates, is_expressing, title="t-SNE Plot"):
 
     # Points that are expressing
     foreground_mask = np.array(is_expressing)
-
-    # Points that are not expressing
     background_mask = ~foreground_mask
 
-    # Create a new figure and axis
-    plt.figure(figsize=(8, 8))
-    ax = plt.subplot(111)
+    fig = go.Figure()
 
-    # Plot the background points (not expressing)
-    ax.scatter(
-        tsne_coordinates[background_mask, 0],
-        tsne_coordinates[background_mask, 1],
-        color="lightgray",
-        label="Background",
-        s=1,
-        alpha=0.5,
+    fig.add_trace(
+        go.Scatter(
+            x=tsne_coordinates[background_mask, 0],
+            y=tsne_coordinates[background_mask, 1],
+            mode="markers",
+            marker=dict(color="lightgray", size=5),
+            name="Background",
+        )
     )
 
-    # Plot the foreground points (expressing)
-    ax.scatter(
-        tsne_coordinates[foreground_mask, 0],
-        tsne_coordinates[foreground_mask, 1],
-        color="red",
-        label="Foreground",
-        s=1,
+    fig.add_trace(
+        go.Scatter(
+            x=tsne_coordinates[foreground_mask, 0],
+            y=tsne_coordinates[foreground_mask, 1],
+            mode="markers",
+            marker=dict(color="red", size=5),
+            name="Foreground",
+        )
     )
 
-    # Set labels, title, and legend
-    plt.xlabel("t-SNE 1")
-    plt.ylabel("t-SNE 2")
-    plt.title(title)
-    plt.legend(loc="best", markerscale=5)
-    plt.show()
+    fig.update_layout(title=title)
+    fig.show()
