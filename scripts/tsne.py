@@ -85,7 +85,7 @@ def generate_tsne(
         tsne_coordinates = pd.read_csv(output_file).values
     else:
         # Generate t-SNE coordinates
-        expression_matrix = dge_data.values.T.astype(float)
+        expression_matrix = dge_data.values.astype(float)
 
         if dev:
             print(

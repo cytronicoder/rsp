@@ -1,7 +1,5 @@
 import os
-import numpy as np
 import pandas as pd
-from sklearn.cluster import DBSCAN
 
 from scripts.tsne import generate_tsne
 
@@ -9,7 +7,7 @@ from scripts.tsne import generate_tsne
 def get_genes(dge_file, target_cluster=None):
     """
     Get genes from the DGE file. If target_cluster is specified, use DBSCAN to
-    isolate and return only the genes present in that cluster.
+    isolate and return only the genes present in that cluster after t-SNE reduction.
 
     Parameters:
     - dge_file (str): The path to the DGE file.
@@ -19,29 +17,28 @@ def get_genes(dge_file, target_cluster=None):
     - list: List of genes.
     """
 
-    # Read the DGE file
-    split_filename = os.path.splitext(dge_file)[0]
+    # Use the generate_tsne function to get t-SNE coordinates and clustering information
+    _, is_expressing, _ = generate_tsne(dge_file, target_cluster=target_cluster)
 
+    # Read the DGE file to get gene names
+    split_filename = os.path.splitext(dge_file)[0]
     if os.path.isfile(f"{split_filename}.dge.parquet"):
         dge_data = pd.read_parquet(f"{split_filename}.dge.parquet")
     else:
         dge_data = pd.read_csv(dge_file, sep=None, engine="python")
-        dge_data.to_parquet(f"{split_filename}.dge.parquet")
 
-    if target_cluster is not None:
-        tsne_coordinates, _, _ = generate_tsne(dge_file, target_cluster=target_cluster)
-        dbscan = DBSCAN()
-        cluster_labels = dbscan.fit_predict(tsne_coordinates)
-        target_cell_indices = np.where(cluster_labels == target_cluster)[0].tolist()
+    gene_names = dge_data.index.tolist()
 
-        filtered_data = dge_data[dge_data.columns[target_cell_indices].tolist()]
-        expressed_genes_mask = filtered_data.sum(axis=1) > 1
-        expressed_genes = filtered_data.index[expressed_genes_mask].tolist()
+    print(is_expressing)
 
-        return expressed_genes
+    # If a target cluster is specified, return only genes from that cluster
+    if target_cluster is not None and is_expressing is not None:
+        genes_in_target_cluster = [
+            gene for i, gene in enumerate(gene_names) if is_expressing[i]
+        ]
+        return genes_in_target_cluster
 
-    # If no target cluster specified, return all genes
-    return dge_data.index.tolist()
+    return gene_names
 
 
 def save_plot(fig, filename):
