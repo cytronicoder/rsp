@@ -12,6 +12,8 @@ tsne_fig, rsp_fig = gene_analysis(
 for fig in [tsne_fig, rsp_fig]:
     fig.show()
 
+save_plot(tsne_fig, "tsne.png")
+
 # coordinates, is_expressing = generate_tsne(
 #     dge_file="data/GSM2906447_NeonatalHeart_dge.txt",
 #     marker_gene="Actc1",

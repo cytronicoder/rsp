@@ -1,3 +1,13 @@
+"""
+This module provides functions to simulate and visualize cellular data in a two-dimensional space.
+
+Cells can be represented with varying levels of expression, and the distribution can be uniform or 
+biased around certain centroids.
+
+The primary functionality of this module is to generate a Plotly 
+scatter plot showing cells in a unit circle, with a subset of them representing expressing cells.
+"""
+
 import numpy as np
 import plotly.graph_objects as go
 
@@ -28,6 +38,9 @@ def plot_simulated_cells(
     Returns:
     - coordinates (numpy array): Array containing the generated points.
     - is_expressing (numpy array): Boolean array indicating whether each point represents a cell expressing the gene.
+
+    Example:
+    >>> coordinates, is_expressing = plot_simulated_cells(1000, 0.1, distribution='biased', sigma=0.3)
     """
 
     # Setting the seed for reproducibility

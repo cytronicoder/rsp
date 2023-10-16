@@ -6,6 +6,9 @@ def save_plot(fig, filename):
     - fig (go.Figure): The Plotly figure to save.
     - filename (str): The name of the file to save the figure to.
       Supported extensions: .html, .png, .jpg or .jpeg
+
+    Example:
+    >>> save_plot(fig, 'my_plot.html')
     """
     file_ext = filename.split(".")[-1]
 
