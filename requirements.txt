@@ -21,8 +21,10 @@ nest-asyncio==1.5.8
 numpy==1.26.1
 packaging==23.2
 pandas==2.1.1
+pdoc==14.1.0
 plotly==5.17.0
 pyarrow==13.0.0
+Pygments==2.16.1
 python-dateutil==2.8.2
 pytz==2023.3.post1
 requests==2.31.0
