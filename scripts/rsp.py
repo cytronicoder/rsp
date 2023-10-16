@@ -73,8 +73,8 @@ def generate_polygon(coordinates, is_expressing, theta_bound=[0, 2 * np.pi]):
     polygon_area = np.sum(segment_areas)
 
     # Plotly polar plot for the polygon
-    fig = go.Figure()
-    fig.add_trace(
+    rsp_fig = go.Figure()
+    rsp_fig.add_trace(
         go.Scatterpolar(
             r=radii,
             theta=np.degrees(angles),
@@ -85,7 +85,7 @@ def generate_polygon(coordinates, is_expressing, theta_bound=[0, 2 * np.pi]):
         )
     )
 
-    fig.update_layout(
+    rsp_fig.update_layout(
         title="Polygon Representation",
         polar=dict(
             radialaxis=dict(visible=True, range=[0, 1]),
@@ -108,16 +108,20 @@ def generate_polygon(coordinates, is_expressing, theta_bound=[0, 2 * np.pi]):
         showlegend=True,
     )
 
-    return fig
+    return rsp_fig
 
 
 def gene_analysis(
     dge_file, marker_gene=None, target_cluster=None, theta_bound=[0, 2 * np.pi]
 ):
-    tsne_coordinates, is_expressing = generate_tsne(
+    tsne_coordinates, is_expressing, tsne_fig = generate_tsne(
         dge_file, marker_gene=marker_gene, target_cluster=target_cluster
     )
 
-    fig = generate_polygon(tsne_coordinates, is_expressing, theta_bound=theta_bound)
+    rsp_fig = generate_polygon(tsne_coordinates, is_expressing, theta_bound=theta_bound)
 
-    return fig
+    rsp_fig.update_layout(
+        title=f"RSP plot with marker gene '{marker_gene}'",
+    )
+
+    return tsne_fig, rsp_fig

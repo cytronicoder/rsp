@@ -3,12 +3,14 @@ from scripts.simulation import plot_simulated_cells
 from scripts.rsp import generate_polygon, gene_analysis
 from scripts.util import save_plot
 
-fig = gene_analysis(
+tsne_fig, rsp_fig = gene_analysis(
     dge_file="data/GSM2906447_NeonatalHeart_dge.txt",
     marker_gene="Actc1",
     target_cluster=1,
 )
-fig.show()
+
+for fig in [tsne_fig, rsp_fig]:
+    fig.show()
 
 # coordinates, is_expressing = generate_tsne(
 #     dge_file="data/GSM2906447_NeonatalHeart_dge.txt",

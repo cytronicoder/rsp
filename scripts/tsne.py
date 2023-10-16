@@ -199,9 +199,8 @@ def generate_tsne(
         if not marker_gene
         else f"t-SNE plot with {marker_gene} highlighted"
     )
-    fig.show()
 
-    return filtered_tsne_coordinates, is_expressing
+    return filtered_tsne_coordinates, is_expressing, fig
 
 
 def plot(tsne_coordinates, is_expressing, title="t-SNE Plot"):
