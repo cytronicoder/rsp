@@ -1,4 +1,5 @@
 import os
+import numpy as np
 import pandas as pd
 
 from scripts.tsne import generate_tsne
@@ -6,39 +7,44 @@ from scripts.tsne import generate_tsne
 
 def get_genes(dge_file, target_cluster=None):
     """
-    Get genes from the DGE file. If target_cluster is specified, use DBSCAN to
-    isolate and return only the genes present in that cluster after t-SNE reduction.
+    Get genes from the DGE file. If target_cluster is specified, filter and
+    return only the genes that are expressed in that cluster.
 
     Parameters:
     - dge_file (str): The path to the DGE file.
-    - target_cluster (int, optional): The target cluster to isolate. Defaults to None.
+    - target_cluster (int, optional): The target cluster to filter by. Defaults to None.
 
     Returns:
     - list: List of genes.
     """
 
     # Use the generate_tsne function to get t-SNE coordinates and clustering information
-    _, is_expressing, _ = generate_tsne(dge_file, target_cluster=target_cluster)
+    _, is_expressing_cells, _ = generate_tsne(dge_file, target_cluster=target_cluster)
 
-    # Read the DGE file to get gene names
+    # Read the DGE file to get gene names and expression matrix
     split_filename = os.path.splitext(dge_file)[0]
     if os.path.isfile(f"{split_filename}.dge.parquet"):
         dge_data = pd.read_parquet(f"{split_filename}.dge.parquet")
     else:
         dge_data = pd.read_csv(dge_file, sep=None, engine="python")
 
-    gene_names = dge_data.index.tolist()
+    gene_names = dge_data.index.values
+    expression_matrix = dge_data.values
 
-    print(is_expressing)
+    # Filter the expression matrix to only include cells from the target cluster
+    if is_expressing_cells is not None:
+        reduced_matrix = expression_matrix[:, is_expressing_cells]
+    else:
+        reduced_matrix = expression_matrix
 
-    # If a target cluster is specified, return only genes from that cluster
-    if target_cluster is not None and is_expressing is not None:
-        genes_in_target_cluster = [
-            gene for i, gene in enumerate(gene_names) if is_expressing[i]
-        ]
-        return genes_in_target_cluster
+    # Get the list of genes that are expressed in any of the cells in the target cluster
+    expressed_genes = [
+        gene
+        for gene, expression in zip(gene_names, reduced_matrix)
+        if np.any(expression > 0)
+    ]
 
-    return gene_names
+    return expressed_genes
 
 
 def save_plot(fig, filename):
