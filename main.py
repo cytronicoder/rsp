@@ -1,6 +1,6 @@
 import dash
 from dash import dcc, html
-from dash.dependencies import Input, Output
+from dash.dependencies import Input, Output, State
 import atexit
 import os
 import tempfile
@@ -44,6 +44,9 @@ styles = {
 app.layout = html.Div(
     [
         html.H1("RSP Analysis"),
+        dcc.Store(
+            id="uploaded-dge-path", storage_type="memory"
+        ),  # Store component for holding the path of the uploaded file
         html.Div(
             [
                 dcc.Upload(
@@ -82,33 +85,34 @@ temp_dir = tempfile.mkdtemp()  # Create a dedicated temporary directory for the 
 
 
 @app.callback(
-    Output("upload-dge-file", "children"),
+    [Output("upload-dge-file", "children"), Output("uploaded-dge-path", "data")],
     [Input("upload-dge-file", "contents")],
     prevent_initial_call=True,
 )
 def update_upload_button_text(file_contents):
     if not file_contents:
-        return html.Button("Upload DGE File", style=styles["button"])
+        return html.Button("Upload DGE File", style=styles["button"]), dash.no_update
 
     dge_file_path = save_dge_to_temp_file(file_contents, "dge")
-    return f"File uploaded to {dge_file_path}. Click again to change."
+    return f"File uploaded to {dge_file_path}. Click again to change.", {
+        "path": dge_file_path
+    }
 
 
 @app.callback(
     [Output("tsne-plot", "figure"), Output("rsp-plot", "figure")],
-    [Input("generate-button", "n_clicks")],  # Listening to the button click event
+    [Input("generate-button", "n_clicks")],
     [
-        # These are now 'State' not 'Input' because we only want to read their values, not trigger the callback
-        dash.dependencies.State("upload-dge-file", "contents"),
-        dash.dependencies.State("gene-input", "value"),
-        dash.dependencies.State("cluster-input", "value"),
+        State("uploaded-dge-path", "data"),
+        State("gene-input", "value"),
+        State("cluster-input", "value"),
     ],
 )
-def update_plots(n_clicks, dge_file_content, gene_name, cluster):
-    if not n_clicks or dge_file_content is None:
+def update_plots(n_clicks, uploaded_dge_data, gene_name, cluster):
+    if not n_clicks or uploaded_dge_data is None:
         return dash.no_update, dash.no_update
 
-    dge_file_path = save_dge_to_temp_file(dge_file_content, "dge")
+    dge_file_path = uploaded_dge_data["path"]
 
     tsne_fig, rsp_fig, _ = gene_analysis(
         dge_file_path, marker_gene=gene_name, target_cluster=cluster, debug=False
