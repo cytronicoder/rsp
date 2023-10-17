@@ -53,6 +53,11 @@ def generate_tsne(
     - epsilon (int): The epsilon value for DBSCAN.
     - minpts (int): The minpts value for DBSCAN.
     - dev (bool): Whether to print debug information.
+
+    Returns:
+    - filtered_tsne_coordinates (numpy.ndarray): A filtered set of t-SNE coordinates. If a marker gene or target cluster is specified, this contains only the coordinates for cells expressing the gene or belonging to the target cluster, respectively.
+    - is_expressing (numpy.ndarray or None): A boolean array indicating which cells (of the filtered set) are expressing the specified marker gene. If no marker gene is specified, this is None.
+    - fig (plotly.graph_objects.Figure): A Plotly figure object visualizing the t-SNE plot with either DBSCAN clusters or highlighted cells based on marker gene expression.
     """
     dge_data = None
     expression_matrix = None
