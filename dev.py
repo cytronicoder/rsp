@@ -1,10 +1,29 @@
+import numpy as np
+
 from scripts.tsne import generate_tsne
 from scripts.simulation import plot_simulated_cells
 from scripts.rsp import generate_polygon, gene_analysis
-from scripts.util import get_genes, save_plot
+from scripts.util import get_genes, get_gene_info, save_plot
 
-genes = get_genes(dge_file="data/GSM2906447_NeonatalHeart_dge.txt", target_cluster=1)
-print(genes)
+# genes = get_genes(dge_file="data/GSM2906447_NeonatalHeart_dge.txt", target_cluster=1)
+# print(genes)
+
+info = get_gene_info(dge_file="data/GSM2906447_NeonatalHeart_dge.txt", target_gene="Sparc")
+print(info)
+
+# select genes that starts with mt-
+# genes = [gene for gene in genes if gene.startswith("mt-")]
+
+# for gene in genes:
+#     _, rsp_fig, rsp_area = gene_analysis(
+#         dge_file="data/GSM2906447_NeonatalHeart_dge.txt",
+#         marker_gene=gene,
+#         target_cluster=1,
+#     )
+
+#     # rsp_fig.show()
+
+#     print(input(f"{gene}: {rsp_area:.2f}; press enter to continue..."))
 
 # tsne_fig, rsp_fig = gene_analysis(
 #     dge_file="data/GSM2906447_NeonatalHeart_dge.txt",
