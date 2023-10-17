@@ -39,7 +39,7 @@ def generate_tsne(
     target_cluster=None,
     epsilon=4,
     minpts=40,
-    dev=False,
+    debug=False,
 ):
     """
     Generate t-SNE 2D coordinates from DGE file and cluster using DBSCAN.
@@ -52,7 +52,7 @@ def generate_tsne(
     - target_cluster (int): The target cluster to highlight.
     - epsilon (int): The epsilon value for DBSCAN.
     - minpts (int): The minpts value for DBSCAN.
-    - dev (bool): Whether to print debug information.
+    - debug (bool): Whether to print debug information.
 
     Returns:
     - filtered_tsne_coordinates (numpy.ndarray): A filtered set of t-SNE coordinates. If a marker gene or target cluster is specified, this contains only the coordinates for cells expressing the gene or belonging to the target cluster, respectively.
@@ -64,15 +64,15 @@ def generate_tsne(
     tsne_coordinates = None
     cluster_labels = None
 
-    if dev:
-        print(f"Running in dev mode!")
+    if debug:
+        print(f"Running in debug mode!")
 
     split_filename = os.path.splitext(dge_file)[0]
 
     if output_file is None:
         output_file = split_filename + ".tsne.csv"
 
-        if dev:
+        if debug:
             print(f"Defaulting output file directory to {output_file}.")
 
     # Read the DGE file
@@ -92,7 +92,7 @@ def generate_tsne(
         # Generate t-SNE coordinates
         expression_matrix = dge_data.values.T.astype(float)
 
-        if dev:
+        if debug:
             print(
                 f"Loaded {expression_matrix.shape[1]} genes in {expression_matrix.shape[0]} cells."
             )
@@ -103,7 +103,7 @@ def generate_tsne(
             output_file, index=False, header=["X", "Y"]
         )
 
-    if dev:
+    if debug:
         plot_k_distance_graph(tsne_coordinates, minpts)
         print(input("Press Enter to continue..."))
 
@@ -114,7 +114,7 @@ def generate_tsne(
 
     fig = go.Figure()
 
-    if dev:
+    if debug:
         # Print number of noise points and number of points in each cluster
         print(
             "Number of noise points: {}".format(

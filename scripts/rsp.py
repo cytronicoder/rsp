@@ -143,7 +143,11 @@ def generate_polygon(coordinates, is_expressing, theta_bound=[0, 2 * np.pi]):
 
 
 def gene_analysis(
-    dge_file, marker_gene=None, target_cluster=None, theta_bound=[0, 2 * np.pi]
+    dge_file,
+    marker_gene=None,
+    target_cluster=None,
+    theta_bound=[0, 2 * np.pi],
+    debug=False,
 ):
     """
     Performs gene analysis by generating t-SNE and RSP plots for a given marker gene and target cluster.
@@ -164,10 +168,12 @@ def gene_analysis(
     >>> rsp_fig.show()
     """
     tsne_coordinates, is_expressing, tsne_fig = generate_tsne(
-        dge_file, marker_gene=marker_gene, target_cluster=target_cluster
+        dge_file, marker_gene=marker_gene, target_cluster=target_cluster, debug=debug
     )
 
-    rsp_fig, rsp_area = generate_polygon(tsne_coordinates, is_expressing, theta_bound=theta_bound)
+    rsp_fig, rsp_area = generate_polygon(
+        tsne_coordinates, is_expressing, theta_bound=theta_bound
+    )
 
     rsp_fig.update_layout(
         title=f"RSP plot with marker gene '{marker_gene}'",

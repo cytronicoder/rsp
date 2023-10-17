@@ -2,6 +2,9 @@ import dash
 from dash import dcc, html
 from dash.dependencies import Input, Output
 
+import webbrowser
+from threading import Timer
+
 from scripts.tsne import generate_tsne
 from scripts.simulation import plot_simulated_cells
 from scripts.rsp import generate_polygon
@@ -63,8 +66,13 @@ app.layout = html.Div(
                     style={"display": "flex"},
                 ),
             ],
-            style={"width": "100%", "display": "flex", "flex-direction": "column", "gap": "10px"},
-        )
+            style={
+                "width": "100%",
+                "display": "flex",
+                "flex-direction": "column",
+                "gap": "10px",
+            },
+        ),
     ]
 )
 
@@ -89,10 +97,11 @@ def update_plots(percentage_value, seed_value, distribution_type):
         sigma=0.3,
         seed=seed,
     )
-    fig2 = generate_polygon(coordinates, is_expressing)
+    fig2, _ = generate_polygon(coordinates, is_expressing)
     return fig1, fig2
 
 
 # Run the Dash app
 if __name__ == "__main__":
-    app.run_server(debug=True)
+    Timer(1, lambda: webbrowser.open("http://127.0.0.1:8050/")).start()
+    app.run_server(debug=True, use_reloader=False)
