@@ -8,7 +8,9 @@ from scripts.util import get_genes, get_gene_info, save_plot
 # genes = get_genes(dge_file="data/GSM2906447_NeonatalHeart_dge.txt", target_cluster=1)
 # print(genes)
 
-info = get_gene_info(dge_file="data/GSM2906447_NeonatalHeart_dge.txt", target_gene="Sparc")
+info = get_gene_info(
+    dge_file="data/GSM2906447_NeonatalHeart_dge.txt", target_gene="Sparc"
+)
 print(info)
 
 # select genes that starts with mt-

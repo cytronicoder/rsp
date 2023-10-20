@@ -59,6 +59,7 @@ def generate_tsne(
     - is_expressing (numpy.ndarray or None): A boolean array indicating which cells (of the filtered set) are expressing the specified marker gene. If no marker gene is specified, this is None.
     - fig (plotly.graph_objects.Figure): A Plotly figure object visualizing the t-SNE plot with either DBSCAN clusters or highlighted cells based on marker gene expression.
     """
+
     dge_data = None
     expression_matrix = None
     tsne_coordinates = None

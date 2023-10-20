@@ -72,7 +72,7 @@ def get_gene_info(dge_file, target_gene):
 
         # Calculate metrics
         gene_name = target_gene
-        
+
         # Coverage: Percentage of non-zero expressions
         foreground = (gene_expression_values > 0).sum()
         total_samples = len(gene_expression_values)
