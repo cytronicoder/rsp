@@ -1,19 +1,30 @@
 import numpy as np
+import pandas as pd
 
 from scripts.tsne import generate_tsne
 from scripts.simulation import plot_simulated_cells
 from scripts.rsp import generate_polygon, gene_analysis
 from scripts.util import get_genes, get_gene_info, save_plot
+from scripts.pager import PAGER
+
+pager = PAGER()
+
+df = pd.read_csv("filtered_data.csv")
+selected_genes = df[df["RSP Area"] != 0]["Gene Name"].head(50).tolist()
+print(selected_genes)
+
+pager_results = pager.run_pager(selected_genes)
+print(pager_results.head())
 
 # genes = get_genes(dge_file="data/GSM2906447_NeonatalHeart_dge.txt", target_cluster=1)
 # print(genes)
 
-info = get_gene_info(
-    dge_file="data/GSM2906447_NeonatalHeart_dge.txt", target_gene="Sparc"
-)
-print(info)
+# info = get_gene_info(
+#     dge_file="data/GSM2906447_NeonatalHeart_dge.txt", target_gene="Sparc"
+# )
+# print(info)
 
-# select genes that starts with mt-
+# mitochondrial genes filter
 # genes = [gene for gene in genes if gene.startswith("mt-")]
 
 # for gene in genes:
