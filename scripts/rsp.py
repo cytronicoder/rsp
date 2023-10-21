@@ -9,6 +9,7 @@ The primary functionality allows users to:
 
 import numpy as np
 import plotly.graph_objects as go
+
 from scripts.tsne import generate_tsne
 
 

@@ -1,11 +1,11 @@
 import os
 import numpy as np
 import pandas as pd
+import plotly.graph_objects as go
+import plotly.express as px
 from sklearn.cluster import DBSCAN
 from sklearn.manifold import TSNE
 from sklearn.metrics import pairwise_distances
-import plotly.graph_objects as go
-import plotly.express as px
 
 
 def plot_k_distance_graph(tsne_coordinates, k):

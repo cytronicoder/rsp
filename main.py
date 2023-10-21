@@ -1,13 +1,16 @@
+import atexit
+import base64
+import os
+import shutil
+import tempfile
+
 import dash
 from dash import dcc, html
 from dash.dependencies import Input, Output, State
-import atexit
-import os
-import tempfile
-import base64
+
 import webbrowser
 from threading import Timer
-import shutil
+
 from scripts.rsp import gene_analysis
 
 # Initialize the Dash app
