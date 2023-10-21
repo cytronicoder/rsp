@@ -9,6 +9,7 @@ The primary functionality allows users to:
 
 import numpy as np
 import plotly.graph_objects as go
+
 from scripts.tsne import generate_tsne
 
 
@@ -41,40 +42,45 @@ def generate_polygon(coordinates, is_expressing, theta_bound=[0, 2 * np.pi]):
 
     differences = []
 
-    for theta in np.linspace(theta_start, theta_end, resolution):
-        # Compute projections
-        foreground_projection = (
-            np.cos(theta) * foreground_coordinates[:, 0]
-            + np.sin(theta) * foreground_coordinates[:, 1]
-        )
-        background_projection = (
-            np.cos(theta) * background_coordinates[:, 0]
-            + np.sin(theta) * background_coordinates[:, 1]
-        )
+    # Edge case: the particular gene is expressed in all cells
+    #            usually, this applies to some mitocondrial genes
+    if len(background_coordinates) == 0:
+        differences = [0] * resolution
+    else:
+        for theta in np.linspace(theta_start, theta_end, resolution):
+            # Compute projections
+            foreground_projection = (
+                np.cos(theta) * foreground_coordinates[:, 0]
+                + np.sin(theta) * foreground_coordinates[:, 1]
+            )
+            background_projection = (
+                np.cos(theta) * background_coordinates[:, 0]
+                + np.sin(theta) * background_coordinates[:, 1]
+            )
 
-        min_val = min(foreground_projection.min(), background_projection.min())
-        max_val = max(foreground_projection.max(), background_projection.max())
+            min_val = min(foreground_projection.min(), background_projection.min())
+            max_val = max(foreground_projection.max(), background_projection.max())
 
-        norm_denom = max_val - min_val
-        foreground_projection = (foreground_projection - min_val) / norm_denom
-        background_projection = (background_projection - min_val) / norm_denom
+            norm_denom = max_val - min_val
+            foreground_projection = (foreground_projection - min_val) / norm_denom
+            background_projection = (background_projection - min_val) / norm_denom
 
-        foreground_hist_values, _ = np.histogram(
-            foreground_projection, bins=resolution, range=(0, 1)
-        )
-        background_hist_values, _ = np.histogram(
-            background_projection, bins=resolution, range=(0, 1)
-        )
+            foreground_hist_values, _ = np.histogram(
+                foreground_projection, bins=resolution, range=(0, 1)
+            )
+            background_hist_values, _ = np.histogram(
+                background_projection, bins=resolution, range=(0, 1)
+            )
 
-        # Compute CDFs
-        foreground_cdf = np.cumsum(foreground_hist_values)
-        foreground_cdf = foreground_cdf / foreground_cdf[-1]
+            # Compute CDFs
+            foreground_cdf = np.cumsum(foreground_hist_values)
+            foreground_cdf = foreground_cdf / foreground_cdf[-1]
 
-        background_cdf = np.cumsum(background_hist_values)
-        background_cdf = background_cdf / background_cdf[-1]
+            background_cdf = np.cumsum(background_hist_values)
+            background_cdf = background_cdf / background_cdf[-1]
 
-        difference = foreground_cdf - background_cdf
-        differences.append(np.sum(np.abs(difference)))
+            difference = foreground_cdf - background_cdf
+            differences.append(np.sum(np.abs(difference)))
 
     # Construct the polygon
     angles = []
@@ -134,11 +140,15 @@ def generate_polygon(coordinates, is_expressing, theta_bound=[0, 2 * np.pi]):
         showlegend=True,
     )
 
-    return rsp_fig
+    return rsp_fig, polygon_area
 
 
 def gene_analysis(
-    dge_file, marker_gene=None, target_cluster=None, theta_bound=[0, 2 * np.pi]
+    dge_file,
+    marker_gene=None,
+    target_cluster=None,
+    theta_bound=[0, 2 * np.pi],
+    debug=False,
 ):
     """
     Performs gene analysis by generating t-SNE and RSP plots for a given marker gene and target cluster.
@@ -150,7 +160,8 @@ def gene_analysis(
     - theta_bound (list, optional): Boundaries for the angle theta used in the RSP plot. Default is [0, 2 * np.pi].
 
     Returns:
-    - tuple: A tuple containing t-SNE and RSP Plotly figures.
+    - tsne_fig (plotly.graph_objects.Figure): A Plotly figure representing the t-SNE plot.
+    - rsp_fig (plotly.graph_objects.Figure): A Plotly figure representing the RSP plot.
 
     Example:
     >>> tsne_fig, rsp_fig = gene_analysis('path/to/dge/file.txt', marker_gene='GeneA', target_cluster='Cluster1')
@@ -158,13 +169,15 @@ def gene_analysis(
     >>> rsp_fig.show()
     """
     tsne_coordinates, is_expressing, tsne_fig = generate_tsne(
-        dge_file, marker_gene=marker_gene, target_cluster=target_cluster
+        dge_file, marker_gene=marker_gene, target_cluster=target_cluster, debug=debug
     )
 
-    rsp_fig = generate_polygon(tsne_coordinates, is_expressing, theta_bound=theta_bound)
+    rsp_fig, rsp_area = generate_polygon(
+        tsne_coordinates, is_expressing, theta_bound=theta_bound
+    )
 
     rsp_fig.update_layout(
         title=f"RSP plot with marker gene '{marker_gene}'",
     )
 
-    return tsne_fig, rsp_fig
+    return tsne_fig, rsp_fig, rsp_area

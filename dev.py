@@ -1,21 +1,56 @@
+import numpy as np
+import pandas as pd
+
 from scripts.tsne import generate_tsne
 from scripts.simulation import plot_simulated_cells
 from scripts.rsp import generate_polygon, gene_analysis
-from scripts.util import save_plot
+from scripts.util import get_genes, get_gene_info, save_plot
+from scripts.pager import PAGER
 
-tsne_fig, rsp_fig = gene_analysis(
-    dge_file="data/GSM2906447_NeonatalHeart_dge.txt",
-    marker_gene="Actc1",
-    target_cluster=1,
-)
+# pager = PAGER()
 
-for fig in [tsne_fig, rsp_fig]:
-    fig.show()
+# df = pd.read_csv("filtered_data.csv")
+# selected_genes = df[df["RSP Area"] != 0]["Gene Name"].head(50).tolist()
+# print(selected_genes)
 
-save_plot(tsne_fig, "tsne.png")
+# pager_results = pager.run_pager(selected_genes)
+# print(pager_results.head())
+
+genes = get_genes(dge_file="data/MCA1.txt", target_cluster=1)
+print(genes)
+
+# info = get_gene_info(
+#     dge_file="data/MCA1.txt", target_gene="Sparc"
+# )
+# print(info)
+
+# mitochondrial genes filter
+# genes = [gene for gene in genes if gene.startswith("mt-")]
+
+# for gene in genes:
+#     _, rsp_fig, rsp_area = gene_analysis(
+#         dge_file="data/MCA1.txt",
+#         marker_gene=gene,
+#         target_cluster=1,
+#     )
+
+#     # rsp_fig.show()
+
+#     print(input(f"{gene}: {rsp_area:.2f}; press enter to continue..."))
+
+# tsne_fig, rsp_fig = gene_analysis(
+#     dge_file="data/MCA1.txt",
+#     marker_gene="Actc1",
+#     target_cluster=1,
+# )
+
+# for fig in [tsne_fig, rsp_fig]:
+#     fig.show()
+
+# save_plot(tsne_fig, "tsne.png")
 
 # coordinates, is_expressing = generate_tsne(
-#     dge_file="data/GSM2906447_NeonatalHeart_dge.txt",
+#     dge_file="data/MCA1.txt",
 #     marker_gene="Actc1",
 #     target_cluster=1,
 # )
