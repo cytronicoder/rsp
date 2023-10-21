@@ -41,19 +41,19 @@ def download(plots=True, data=True):
     rows = []
 
     genes = get_genes(
-        dge_file="data/GSM2906447_NeonatalHeart_dge.txt", target_cluster=1
+        dge_file="data/MCA1.txt", target_cluster=1
     )
 
     for gene in genes:
         print(f"Reading {gene}...")
         # Get the gene information
         info = get_gene_info(
-            dge_file="data/GSM2906447_NeonatalHeart_dge.txt", target_gene=gene
+            dge_file="data/MCA1.txt", target_gene=gene
         )
 
         # Get the RSP Area from the gene_analysis function
         tsne_fig, rsp_fig, rsp_area = gene_analysis(
-            dge_file="data/GSM2906447_NeonatalHeart_dge.txt",
+            dge_file="data/MCA1.txt",
             marker_gene=gene,
             target_cluster=1,
         )
