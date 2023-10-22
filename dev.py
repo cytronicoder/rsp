@@ -4,8 +4,12 @@ import pandas as pd
 from scripts.tsne import generate_tsne
 from scripts.simulation import plot_simulated_cells
 from scripts.rsp import generate_polygon, gene_analysis
-from scripts.util import get_genes, get_gene_info, save_plot
+from scripts.util import get_genes, get_gene_info, save_plot, migrate_to_new_dge_format
 from scripts.pager import PAGER
+
+# Test the function using the provided DGE data
+# test_output_path = "data/MCA1.txt"
+# migrate_to_new_dge_format("data/GSM2906447_NeonatalHeart_dge.txt", test_output_path)
 
 # pager = PAGER()
 
@@ -16,11 +20,11 @@ from scripts.pager import PAGER
 # pager_results = pager.run_pager(selected_genes)
 # print(pager_results.head())
 
-genes = get_genes(dge_file="data/MCA1.txt", target_cluster=1)
-print(genes)
+# genes = get_genes(dge_file="data/MCA1.txt", target_cluster=1)
+# print(genes)
 
 # info = get_gene_info(
-#     dge_file="data/MCA1.txt", target_gene="Sparc"
+#     dge_file="data/MCA1.txt", target_gene="Actc1"
 # )
 # print(info)
 
@@ -49,11 +53,13 @@ print(genes)
 
 # save_plot(tsne_fig, "tsne.png")
 
-# coordinates, is_expressing = generate_tsne(
-#     dge_file="data/MCA1.txt",
-#     marker_gene="Actc1",
-#     target_cluster=1,
-# )
+coordinates, is_expressing, _ = generate_tsne(
+    dge_file="data/MCA2.txt",
+    marker_gene="Actc1",
+    target_cluster=1,
+)
+
+print(coordinates, is_expressing)
 
 # coordinates, is_expressing, _ = plot_simulated_cells(
 #     num_points=1000,
