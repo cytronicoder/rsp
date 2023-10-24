@@ -35,6 +35,7 @@ def generate_polygon(coordinates, is_expressing, theta_bound=[0, 2 * np.pi]):
     theta_start, theta_end = theta_bound
     angle_step = (theta_end - theta_start) / resolution
 
+    is_expressing = is_expressing.flatten()
     foreground_coordinates = coordinates[is_expressing]
     background_coordinates = coordinates[~is_expressing]
 
@@ -104,6 +105,13 @@ def generate_polygon(coordinates, is_expressing, theta_bound=[0, 2 * np.pi]):
 
     polygon_area = np.sum(segment_areas)
 
+    radii_np = np.array(radii)
+    biggest_radius = np.max(radii_np)
+
+    circle_area = np.pi * biggest_radius**2
+    area_difference = np.abs(polygon_area - circle_area)
+    roundness = area_difference / circle_area
+
     # Plotly polar plot for the polygon
     rsp_fig = go.Figure()
     rsp_fig.add_trace(
@@ -140,7 +148,7 @@ def generate_polygon(coordinates, is_expressing, theta_bound=[0, 2 * np.pi]):
         showlegend=True,
     )
 
-    return rsp_fig, polygon_area
+    return rsp_fig, polygon_area, roundness
 
 
 def gene_analysis(
@@ -172,7 +180,7 @@ def gene_analysis(
         dge_file, marker_gene=marker_gene, target_cluster=target_cluster, debug=debug
     )
 
-    rsp_fig, rsp_area = generate_polygon(
+    rsp_fig, rsp_area, roundness = generate_polygon(
         tsne_coordinates, is_expressing, theta_bound=theta_bound
     )
 
@@ -180,4 +188,4 @@ def gene_analysis(
         title=f"RSP plot with marker gene '{marker_gene}'",
     )
 
-    return tsne_fig, rsp_fig, rsp_area
+    return tsne_fig, rsp_fig, rsp_area, roundness

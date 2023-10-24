@@ -1,10 +1,8 @@
 import dash
 from dash import dcc, html
 from dash.dependencies import Input, Output
-
 import webbrowser
 from threading import Timer
-
 from scripts.tsne import generate_tsne
 from scripts.simulation import plot_simulated_cells
 from scripts.rsp import generate_polygon
@@ -73,13 +71,13 @@ app.layout = html.Div(
                 "gap": "10px",
             },
         ),
+        html.Div(id='roundness-metric', style={'font-size': '20px', 'margin-top': '20px'}),
     ]
 )
 
-
 # Define the callback to update the plots based on the slider, seed value, and distribution type
 @app.callback(
-    [Output("tsne-plot", "figure"), Output("rsp-plot", "figure")],
+    [Output("tsne-plot", "figure"), Output("rsp-plot", "figure"), Output('roundness-metric', 'children')],
     [
         Input("marker-percentage-slider", "value"),
         Input("seed-input", "value"),
@@ -87,6 +85,7 @@ app.layout = html.Div(
     ],
 )
 def update_plots(percentage_value, seed_value, distribution_type):
+    print(f'Callback triggered with: {percentage_value}, {seed_value}, {distribution_type}')  # Debugging
     expression_percentage = percentage_value / 100
     seed = seed_value if seed_value is not None else 42
     distribution_type = distribution_type if distribution_type is not None else "biased"
@@ -97,9 +96,10 @@ def update_plots(percentage_value, seed_value, distribution_type):
         sigma=0.3,
         seed=seed,
     )
-    fig2, _ = generate_polygon(coordinates, is_expressing)
-    return fig1, fig2
-
+    fig2, _, roundness_metric = generate_polygon(coordinates, is_expressing)
+    roundness_text = f'Roundness Metric: {roundness_metric}'
+    print(roundness_text)
+    return fig1, fig2, roundness_text
 
 # Run the Dash app
 if __name__ == "__main__":
