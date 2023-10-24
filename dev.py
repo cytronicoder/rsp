@@ -42,24 +42,27 @@ from scripts.pager import PAGER
 
 #     print(input(f"{gene}: {rsp_area:.2f}; press enter to continue..."))
 
-# tsne_fig, rsp_fig = gene_analysis(
-#     dge_file="data/MCA1.txt",
-#     marker_gene="Actc1",
-#     target_cluster=1,
-# )
+tsne_fig, rsp_fig, _, roundness = gene_analysis(
+    dge_file="data/MCA2.txt",
+    marker_gene="Actc1",
+    target_cluster=1,
+)
+
+rsp_fig.show()
+print(roundness)
 
 # for fig in [tsne_fig, rsp_fig]:
 #     fig.show()
 
 # save_plot(tsne_fig, "tsne.png")
 
-coordinates, is_expressing, _ = generate_tsne(
-    dge_file="data/MCA2.txt",
-    marker_gene="Actc1",
-    target_cluster=1,
-)
+# coordinates, is_expressing, _ = generate_tsne(
+#     dge_file="data/MCA2.txt",
+#     marker_gene="Actc1",
+#     target_cluster=1,
+# )
 
-print(coordinates, is_expressing)
+# print(coordinates, is_expressing)
 
 # coordinates, is_expressing, _ = plot_simulated_cells(
 #     num_points=1000,
