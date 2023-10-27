@@ -5,6 +5,7 @@ from scripts.tsne import generate_tsne
 from scripts.simulation import plot_simulated_cells
 from scripts.rsp import generate_polygon, gene_analysis
 from scripts.util import get_genes, get_gene_info, save_plot
+from scripts.download import sim_download
 from scripts.pager import PAGER
 
 # pager = PAGER()
@@ -16,8 +17,10 @@ from scripts.pager import PAGER
 # pager_results = pager.run_pager(selected_genes)
 # print(pager_results.head())
 
-genes = get_genes(dge_file="data/MCA1.txt", target_cluster=1)
-print(genes)
+sim_download(num_genes=100, distribution="even", plots=False, data=True)
+
+# genes = get_genes(dge_file="data/MCA1.txt", target_cluster=1)
+# print(genes)
 
 # info = get_gene_info(
 #     dge_file="data/MCA1.txt", target_gene="Sparc"
