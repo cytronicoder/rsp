@@ -28,8 +28,8 @@ def get_genes(dge_file, target_cluster=None):
     else:
         dge_data = pd.read_csv(dge_file, sep=None, engine="python")
 
-    gene_names = dge_data.index.values
-    expression_matrix = dge_data.values
+    gene_names = dge_data["GENE"].values
+    expression_matrix = dge_data.drop(columns=["GENE"]).values
 
     # Filter the expression matrix to only include cells from the target cluster
     if is_expressing_cells is not None:
@@ -67,8 +67,12 @@ def get_gene_info(dge_file, target_gene):
         dge_data = pd.read_csv(dge_file, sep=None, engine="python")
 
     # Check if the target gene exists in the data
-    if target_gene in dge_data.index:
-        gene_expression_values = dge_data.loc[target_gene].values
+    if target_gene in dge_data["GENE"].values:
+        gene_expression_values = (
+            dge_data[dge_data["GENE"] == target_gene]
+            .drop(columns=["GENE"])
+            .values.flatten()
+        )
 
         # Calculate metrics
         gene_name = target_gene
@@ -108,3 +112,40 @@ def save_plot(fig, filename):
         fig.write_image(filename)
     else:
         print(f"Unsupported file format: {file_ext}. Use one of: html, png, jpg, jpeg.")
+
+
+def migrate_to_new_dge_format(input_path, output_path):
+    """
+    Process the MCA1.txt file based on specified instructions:
+    1. Add a "GENE" column header.
+    2. Remove any quotation marks.
+    3. Change the delimiter from a space character to a tab.
+
+    Args:
+    - input_path: Path to the MCA1.txt file.
+    - output_path: Path where the processed file will be saved.
+
+    Returns:
+    - Path to the processed file.
+    """
+
+    # Reading the input file
+    with open(input_path, "r") as file_mca1:
+        mca1_content = file_mca1.read()
+
+    # Removing quotation marks
+    mca1_content = mca1_content.replace('"', "")
+
+    # Changing the delimiter from space to tab
+    mca1_content = mca1_content.replace(" ", "\t")
+
+    # Adding the "GENE" column header and removing "NeonatalHeart_1." prefix
+    mca1_lines = mca1_content.splitlines()
+    mca1_lines[0] = "GENE\t" + mca1_lines[0].replace("NeonatalHeart_1.", "")
+    mca1_processed_content = "\n".join(mca1_lines)
+
+    # Saving the processed content to the output path
+    with open(output_path, "w") as output_file:
+        output_file.write(mca1_processed_content)
+
+    return output_path

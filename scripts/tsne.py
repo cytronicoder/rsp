@@ -91,7 +91,7 @@ def generate_tsne(
         tsne_coordinates = pd.read_csv(output_file).values
     else:
         # Generate t-SNE coordinates
-        expression_matrix = dge_data.values.T.astype(float)
+        expression_matrix = dge_data.drop(columns=["GENE"]).values.T.astype(float)
 
         if debug:
             print(
@@ -133,8 +133,8 @@ def generate_tsne(
     filtered_tsne_coordinates = tsne_coordinates
 
     if marker_gene:
-        if marker_gene in dge_data.index:
-            gene_expression = dge_data.loc[marker_gene].values
+        if marker_gene in dge_data["GENE"].values:
+            gene_expression = dge_data[dge_data["GENE"] == marker_gene].drop(columns=["GENE"]).values.flatten()
             is_expressing = gene_expression > 0
             foreground_mask = is_expressing
 
@@ -153,7 +153,7 @@ def generate_tsne(
                     x=tsne_coordinates[background_mask, 0],
                     y=tsne_coordinates[background_mask, 1],
                     mode="markers",
-                    marker=dict(color="lightgray", size=5, opacity=0.75),
+                    marker=dict(color="lightgray", size=4, opacity=0.8),
                     name="Background",
                 )
             )
@@ -162,7 +162,7 @@ def generate_tsne(
                     x=tsne_coordinates[foreground_mask, 0],
                     y=tsne_coordinates[foreground_mask, 1],
                     mode="markers",
-                    marker=dict(color="red", size=5),
+                    marker=dict(color="red", size=4),
                     name=f"Foreground ({marker_gene})",
                 )
             )
