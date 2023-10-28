@@ -8,16 +8,24 @@ from scripts.util import get_genes, get_gene_info, save_plot
 from scripts.download import sim_download
 from scripts.pager import PAGER
 
-# pager = PAGER()
+pager = PAGER()
 
-# df = pd.read_csv("filtered_data.csv")
-# selected_genes = df[df["RSP Area"] != 0]["Gene Name"].head(50).tolist()
-# print(selected_genes)
+df = pd.read_csv("filtered_data.csv")
+selected_genes = df[df["RSP Area"] != 0]["Gene Name"].head(50).tolist()
+print(selected_genes)
 
-# pager_results = pager.run_pager(selected_genes)
-# print(pager_results.head())
+pager_results = pager.run_pager(
+    selected_genes,
+    source=[
+        "GOA",
+        "GOA_EXCL",
+        "WikiPathway_2021",
+    ],
+)
+pager_results.to_csv("pager_results.csv", index=False)
+pager_results["NAME"].head(20).to_csv("top_20_studies.csv", index=False)
 
-sim_download(num_genes=100, distribution="even", plots=False, data=True)
+# sim_download(num_genes=100, distribution="even", plots=False, data=True)
 
 # genes = get_genes(dge_file="data/MCA1.txt", target_cluster=1)
 # print(genes)
