@@ -94,7 +94,8 @@ def sim_download(num_genes=1000, distribution="even", plots=True, data=True):
     rows = []
 
     # Get a list of increasing coverage values based on how many fake genes to generate
-    coverage_values = np.linspace(0.1, 1, num_genes)
+    coverage_values = np.linspace(0.01, 1, num_genes)
+    coverage_values = coverage_values[::-1]
 
     for i in range(num_genes):
         gene = f"Gene_{i+1}"
@@ -105,6 +106,7 @@ def sim_download(num_genes=1000, distribution="even", plots=True, data=True):
             num_points=1000,
             expression_percentage=coverage_values[i],
             distribution=distribution,
+            seed=69,
         )
 
         # Calculate the RSP area (for simplicity, let's assume it's the sum of coordinates for expressing cells)
