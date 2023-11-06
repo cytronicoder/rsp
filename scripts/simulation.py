@@ -19,6 +19,7 @@ def plot_simulated_cells(
     sigma=0.3,
     seed=None,
     display=False,
+    center=(-0.5, 0.5),
 ):
     """
     Generate points with coordinates between -1 and 1 using uniform sampling.
@@ -34,6 +35,7 @@ def plot_simulated_cells(
     - sigma (float, optional): Standard deviation of the Gaussian distribution; defaults to 0.3.
     - seed (int, optional): Random seed for reproducibility.
     - display (bool, optional): Whether to display the plot.
+    - center (tuple, optional): Tuple containing the minimum and maximum values for generating the center of the biased distribution; defaults to (-0.5, 0.5).
 
     Returns:
     - coordinates (numpy array): Array containing the generated points.
@@ -63,8 +65,8 @@ def plot_simulated_cells(
     )
 
     if distribution == "biased":
-        # Define a random center for the Gaussian distribution
-        center_x, center_y = np.random.uniform(-0.5, 0.5, 2)
+        # Define a random center for the Gaussian distribution using the provided range
+        center_x, center_y = np.random.uniform(center[0], center[1], 2)
 
         for idx in expressing_indices:
             x = center_x + np.random.normal(0, sigma)
