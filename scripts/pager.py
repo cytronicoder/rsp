@@ -1,10 +1,8 @@
-"""
-This module provides a class interface to the PAGER API, which offers functionalities
-to perform hypergeometric tests, retrieve enriched PAGs, and access various other data 
-related to the PAGER database.
-"""
-
+############################################
+### PAGER functions for PAGER server API ###
+############################################
 import requests
+import numpy as np
 import pandas as pd
 
 
@@ -77,41 +75,34 @@ class PAGER:
             "CellMarker",
         ]
 
-        # Default parameters
-        default_params = {
-            "source": all_sources,
-            "type": "All",
-            "min_size": 1,
-            "max_size": 2000,
-            "similarity": 0,
-            "overlap": "1",
-            "organism": "All",
-            "n_coco": "0",
-            "p_value": 0.05,
-            "fdr": 0.05,
-        }
-        # Handle case-insensitivity for kwargs
-        kwargs_lower = {k.lower(): v for k, v in kwargs.items()}
+        # Process kwargs to get parameter values or use defaults
+        source = kwargs.get("source", all_sources)
+        type = kwargs.get("type", "All")
+        minSize = kwargs.get("minSize", 1)
+        maxSize = kwargs.get("maxSize", 2000)
+        sim = kwargs.get("similarity", 0)
+        overlap = kwargs.get("overlap", "1")
+        organism = kwargs.get("organism", "All")
+        nCoCo = kwargs.get("nCoCo", "0")
+        pvalue = kwargs.get("pvalue", 0.05)
+        FDR = kwargs.get("FDR", 0.05)
 
-        # Override defaults with provided kwargs
-        for key in default_params.keys():
-            default_params[key] = kwargs_lower.get(key, default_params[key])
-
-        # Create the payload
+        # Set up parameters and handle encoding issues
         params = {
             "genes": "%20".join(genes),
-            "source": "%20".join(default_params["source"]),
-            "type": default_params["type"],
-            "ge": default_params["min_size"],
-            "le": default_params["max_size"],
-            "sim": str(default_params["similarity"]),
-            "olap": str(default_params["overlap"]),
-            "organism": default_params["organism"],
-            "cohesion": str(default_params["n_coco"]),
-            "pvalue": default_params["p_value"],
-            "FDR": default_params["fdr"],
+            "source": "%20".join(source),
+            "type": type,
+            "ge": minSize,
+            "le": maxSize,
+            "sim": str(sim),
+            "olap": str(overlap),
+            "organism": organism,
+            "cohesion": str(nCoCo),
+            "pvalue": pvalue,
+            "FDR": FDR,
         }
 
+        # Make the API call
         response = requests.post(
             "http://discovery.informatics.uab.edu/PAGER/index.php/geneset/pagerapi",
             data=params,
